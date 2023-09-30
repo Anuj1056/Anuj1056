@@ -1,0 +1,916 @@
+import datetime
+from deep_translator import GoogleTranslator
+from pyautogui import click
+import operator
+from keyboard import press,write
+from bs4 import BeautifulSoup
+import os
+from ImageDetection import MainExecution
+from time import sleep
+import random
+import sys
+import time
+import automation
+from gtts import gTTS
+import pyttsx3
+import os
+from winsound import PlaySound
+from Chatgpt import MainExecutionChatGPT
+from Bard import MainExecutionBard
+
+import webbrowser
+import PyPDF2
+import cv2
+import psutil
+import ctypes
+import instaloader
+import subprocess
+import pyautogui
+import pyjokes
+import pywhatkit as kit
+import requests
+from clap import Tester
+from selenium import webdriver
+import speech_recognition as sr
+import wikipedia
+from pycaw.api.audioclient import ISimpleAudioVolume
+from pycaw.utils import AudioUtilities
+from requests import get
+Tester()
+# Initialize text-to-speech engine
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+print(voices[0].id)
+engine.setProperty('voices', voices[0].id)
+engine.setProperty('rate', 200)
+
+
+def speak(audio: any) -> object:
+    """
+    :rtype: {head[i]}
+    """
+
+    engine.say(audio)
+    print(audio)
+    engine.runAndWait()  
+
+
+def takecommand():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 2
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")
+        query = r.recognize_google(audio, language='en-in')
+        
+        print(f"user said: {query}")
+
+    except Exception as e:
+       print('say that again please...')
+
+       return ""
+    query = query.lower()
+    return query.lower()
+
+def ask_password():
+    speak('password please')
+    ps=takecommand()
+    password = (ps)
+    return password
+
+
+# Example usage:
+def start_program():
+    password = ask_password()
+
+    # Check if the password is correct
+    if password == "fire":
+       
+        speak('Access granted. Starting the program...')
+
+        # Your code for the program goes here
+    else:
+         
+        speak('Incorrect password. Access denied. Try again after restart system')
+        sys.exit()
+
+start_program()
+
+
+def wish():
+    hour = int(datetime.datetime.now().hour)
+    if hour>=0 and hour<=12:
+        speak(f"good morning,sir")
+        get_current_time()
+        temperature()
+    elif hour>=12 and hour<=18:
+        speak(f"good afternoon,sir")       
+        get_current_time()
+        temperature()
+    else:
+        speak(f"good evening,sir")
+        get_current_time()
+        temperature()
+    speak("This is RAGHU sir, please tell me how can i help you ?")
+
+# Do some other work...
+
+
+def get_battery_info():
+    battery = psutil.sensors_battery()
+
+    if battery is None:
+        return "Battery information not available."
+
+    plugged = battery.power_plugged
+    percent = battery.percent
+    time_left = battery.hour.minleft
+
+    if plugged:
+        status = "Plugged in"
+    else:
+        status = "Not plugged in"
+
+    if time_left < 0:
+        time_left = "Calculating..."
+
+    return f"Battery status: {status}\nBattery percentage: {percent}%\nTime remaining: {time_left} seconds"
+
+def News():
+     search = "latest news in india"
+     url = f"https://www.google.com/search?q={search}"
+     r = requests.get(url)
+     data = BeautifulSoup(r.text,"html.parser")
+     news = data.find("div",class_="BNeawe").text
+     speak(f"latest news is {news}")
+
+def quit_website(url):
+    # Launch the browser
+    driver = webdriver.Chrome()  # You need to have Chrome WebDriver installed
+
+    # Open the website
+    driver.get(url)
+
+    # Perform any actions on the website if needed
+
+    # Quit the browser
+    driver.quit()
+
+def track_neo():
+    url = "https://api.nasa.gov/neo/rest/v1/feed"  # API endpoint for getting NEO data
+    api_key = "d5U9xX1vt66EGwUqc7mNeMAqTm2GHPpeNhIPy62y"  # Replace with your NASA API key
+    parameters = {
+        "start_date": "2022-01-01",
+        "end_date": "2022-01-07",
+        "api_key": api_key
+    }
+    
+    response = requests.get(url, params=parameters)
+    data = response.json()
+    
+    if response.status_code == 200:
+        neo_count = data["element_count"]
+        neo_list = data["near_earth_objects"]
+        
+        print(f"Total NEOs: {neo_count}")
+        
+        for date in neo_list:
+            print(f"\nDate: {date}")
+            
+            for neo in neo_list[date]:
+                name = neo["name"]
+                diameter = neo["estimated_diameter"]["kilometers"]["estimated_diameter_max"]
+                hazardous = neo["is_potentially_hazardous_asteroid"]
+                
+                speak(f"Name: {name}")
+                speak(f"Diameter (km): {diameter}")
+                speak(f"Potentially Hazardous: {hazardous}")
+    else:
+        speak("Failed to retrieve NEO data.")
+
+
+def set_brightness():
+    value=takecommand()
+    if value < 0 or value > 100:
+        print("Invalid brightness value! Please provide a value between 0 and 100.")
+        return
+
+    brightness = int(value * 65535 / 100)  # Convert percentage to 16-bit value
+
+    # Set brightness using Windows API
+    ctypes.windll.user32.SetMonitorBrightness(ctypes.c_void_p(0), ctypes.c_ulong(brightness))
+
+def toggle_settings(action):
+    if action.lower() == 'open':
+        subprocess.Popen('control.exe', shell=True)
+        speak("Settings opened successfully!")
+    elif action.lower() == 'close':
+        subprocess.Popen('taskkill /F /IM control.exe', shell=True)
+        speak("Settings closed successfully!")
+    else:
+        speak("Invalid action! Please provide 'open' or 'close' as the action.")
+
+def toggle_wifi(action: object) -> object:
+    if action.lower() == 'on':
+        subprocess.Popen('netsh interface set interface "Wi-Fi" admin=enable', shell=True)
+        speak("Wi-Fi turned on successfully!")
+    elif action.lower() == 'off':
+        subprocess.Popen('netsh interface set interface "Wi-Fi" admin=disable', shell=True)
+        speak("Wi-Fi turned off successfully!")
+    else:
+        speak("Invalid action! Please provide 'on' or 'off' as the action.")
+
+def toggle_bluetooth(action):
+    if action.lower() == 'on':
+        subprocess.Popen('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\BTHPORT\\Parameters" /v "BluetoothSupportEnabled" /t REG_DWORD /d 1 /f', shell=True)
+        speak("Bluetooth turned on successfully!")
+    elif action.lower() == 'off':
+        subprocess.Popen('reg add "HKLM\\SYSTEM\\CurrentControlSet\\Services\\BTHPORT\\Parameters" /v "BluetoothSupportEnabled" /t REG_DWORD /d 0 /f', shell=True)
+        speak("Bluetooth turned off successfully!")
+    else:
+        speak("Invalid action! Please provide 'on' or 'off' as the action.")
+
+def temperature():
+            search = "temperature in sirsaganj"
+            url = f"https://www.google.com/search?q={search}"
+            r = requests.get(url)
+            data = BeautifulSoup(r.text,"html.parser")
+            temp = data.find("div",class_="BNeawe").text
+            speak(f"current temperature is {temp}")
+
+
+
+
+
+def search_using_voice():
+    # Initialize the speech recognition engine
+    r = sr.Recognizer()
+    
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = r.listen(source)
+    
+    try:
+        print("Recognizing...")
+        query = r.recognize_google(audio)
+        query = takecommand()
+        print(f"You said: {query}")
+        
+        # Open the default web browser and search for the query
+        webbrowser.open_new_tab(f"https://www.google.com/search?q={query}")
+        
+    except sr.UnknownValueError:
+        print("Sorry, I didn't understand. Please try again.")
+        
+    except sr.RequestError:
+        print("Sorry, I couldn't connect to the speech recognition service.")
+
+import PyDictionary as dict
+def dict():
+    speak("Activated Dictionary!")
+    speak('sir please tell me your problem')
+    probl = takecommand()
+    while True:
+        probl = takecommand()   
+        if 'close' in probl or 'exit' in probl:
+              speak("dictionary iv exited")
+              break
+        else:
+            if 'meaning' in probl:
+                        probl = probl.replace('what is the','')
+                        probl = probl.replace('RAGHU','')
+                        probl = probl.replace('of','')
+                        probl = probl.replace('meaning of','')
+                        result = dict.meaning(probl)
+                        speak(f'meaning of {probl} is {result}.')
+
+            if 'synonym' in probl:
+                        probl = probl.replace('what is the','')
+                        probl = probl.replace('RAGHU','')
+                        probl = probl.replace('of','')
+                        probl = probl.replace('synonym of','')
+                        result = dict.synonym(probl)
+                        speak(f'synonym of {probl} is {result}.')
+
+            if 'antonym' in probl:
+                        probl = probl.replace('what is the','')
+                        probl = probl.replace('RAGHU','')
+                        probl = probl.replace('of','')
+                        probl = probl.replace('antonym of','')
+                        result = dict.antonym(probl)
+                        speak(f'antonym of {probl} is {result}.')
+
+            if 'homophone' in probl:
+                        probl = probl.replace('what is the','')
+                        probl = probl.replace('RAGHU','')
+                        probl = probl.replace('of','')
+                        probl = probl.replace('homophone of','')
+                        result = dict.homophone(probl)
+                        speak(f'homophone of {probl} is {result}.')
+
+            if 'oneword' in probl:
+                        probl = probl.replace('what is the','')
+                        probl = probl.replace('RAGHU','')
+                        probl = probl.replace('of','')
+                        probl = probl.replace('oneword of','')
+                        result = dict.oneword(probl)
+                        speak(f'oneword of {probl} is {result}.')                
+            
+
+def ask_about_space(question):
+    url = "https://api.npoint.io/3c2a4b1eae7c6aeeaa5f"  # Sample API endpoint for space-related questions
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        data = response.json()
+        answers = data.get("answers", [])
+        
+        for answer in answers:
+            if question.lower() in answer["question"].lower():
+                return answer["answer"]
+        
+        return "Sorry, I don't have an answer for that question."
+    
+    return "Something went wrong while fetching the data."
+       
+def pdf_reader():
+    book = open('py3.pdf', 'rb')
+    pdfReader = PyPDF2.PdfFileReader(book)
+    pages = pdfReader.numPages
+    speak(f"Total number of pagesin this book{pages} ")
+    speak("sir, please tell me which page i read ")
+    pg = takecommand()
+    page = int({pg})
+    page = pdfReader.getPage(pg)
+    text = page.extractText()
+    speak(text)
+
+    engine.speed(50) in min(1)
+
+import speedtest
+
+def check_internet_speed():
+    st = speedtest.Speedtest()
+    download_speed = st.download() / 1000000  # Convert to Mbps
+    upload_speed = st.upload() / 1000000  # Convert to Mbps
+    
+    speak("sir we have Download Speed: {:.2f} Mbps".format(download_speed))
+    speak("sir we have Upload Speed: {:.2f} Mbps".format(upload_speed))
+    try:
+     os.system('cmd /k "speedtest"')
+    except:
+        speak('there is no internet connection sir')
+
+dictapp = {"queryprompt":"cmd","paint":"paint","word":"winword","excel":"excel","chrome":"chrome","vscode":"code","powerpoint":"powerpnt"}
+def openweb(query):
+    speak("Launching, sir")
+    if ".com" in query or ".co.in" in query or ".org" in query:
+        query = query.replace("open","")
+        query = query.replace("RAGHU","")
+        query = query.replace("launch","")
+        query = query.replace(" ","")
+        webbrowser.open(f"https://www.{query}")
+    else:
+        keys = list(dictapp.keys())
+        for app in keys:
+            if app in query:
+                os.system(f"start {dictapp[app]}")
+
+def track_iss():
+    url = "http://api.open-notify.org/iss-now.json"  # API endpoint for getting ISS location
+    response = requests.get(url)
+    data = response.json()
+    
+    if response.status_code == 200:
+        latitude = data["iss_position"]["latitude"]
+        longitude = data["iss_position"]["longitude"]
+        timestamp = data["timestamp"]
+        
+        print(f"ISS Location - Latitude: {latitude}, Longitude: {longitude}")
+        speak(f"Timestamp: {timestamp}")
+    else:
+        print("Failed to retrieve ISS location.")
+
+
+import psutil
+def check_battery():
+    battery = psutil.sensors_battery()
+    if battery.percent < 20:
+        print("Battery level is low. Please connect the charger.")
+    
+    while True:
+        check_battery()
+
+
+def get_current_time():
+    current_time = time.strftime("%H:%M")
+    speak(f"its {current_time}.")
+def searchGoogle(query):
+    if "google" in query:
+        import wikipedia as googleScrap
+        query = query.replace("RAGHU","")
+        query = query.replace("google search","")
+        query = query.replace("google","")
+        speak("This is what I found on google")
+
+        try:
+            kit.search(query)
+            result = googleScrap.summary(query,1)
+            speak(result)
+
+        except:
+            speak("No speakable output available")
+def translategl(query):
+    speak("sir tell me what u want to translate")
+    
+    while True:
+        lang=takecommand()
+        if 'close' in lang or 'exit' in lang:
+            break     
+        else:
+            print(GoogleTranslator.LANGUAGES)
+            translator = GoogleTranslator()
+            speak("Choose the language in which you want to translate")
+            b = takecommand(lang)  
+            text_to_translate = translator.translate(query,src = "auto",dest= b,)
+            text = text_to_translate.text
+            try : 
+                    speakgl = gTTS(text=text, lang=b, slow= False)
+                    speakgl.save("voice.mp3")
+                    PlaySound("voice.mp3")
+                    
+                    time.sleep(5)
+                    os.remove("voice.mp3")
+            except:
+                    print("Unable to translate")
+def notepad():
+
+    speak("Tell Me What u Want to Write.")
+    speak("I Am Ready To Write.")
+    while True:  
+        writes = takecommand()
+        if 'exit' in writes or 'stop' in writes:
+            break
+        else:
+            date = datetime.datetime.now().strftime("%H:%M")
+
+            filename = str(date).replace(":","-") + "-note.txt"
+
+            with open(filename,"w") as file:
+
+                file.write(writes)
+        if "save" in writes:        
+        
+            path_1 = "C:\\Users\\sudhi\\Desktop\\JARVIS 1" + str(filename)
+
+            path_2 = "C:\\Users\\sudhi\\Desktop\\JARVIS 1\\DataBase\\NotePad"
+
+            os.rename(path_1,path_2)
+
+            os.startfile(path_2)
+def search_on_google():
+   
+    # Prompt the user to speak the search query
+    engine.say("What would you like to search on Google?")
+    engine.runAndWait()
+
+    # Use speech recognition to convert speech into text
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = recognizer.listen(source)
+
+    try:
+        # Convert the recorded audio into text
+        query = recognizer.recognize_google(audio)
+        print(f"User said: {query}")
+
+        # Open the search query in Google using webbrowser module
+        url = f"https://www.google.com/search?q={query}"
+        webbrowser.open(url)
+
+        # Speak the search query confirmation
+        engine.say(f"Searching {query} on Google.")
+        engine.runAndWait()
+
+    except Exception as e:
+        print(e)
+
+
+
+
+      #logic building for tasks
+def taskexe():
+    wish()
+    while True:
+       query = takecommand()
+       if 'notepad' in query:
+           notepad() 
+       elif 'what is in image' in query or 'detact image' in query:
+          MainExecution()
+       elif "open camera" in query:
+           cap = cv2.videoCapture(0)
+           while True:
+               ret, img = cap.read()
+               cv2.imshow('webcam', img)
+               k = cv2.waitKey(50)
+               if k==27:
+                   break
+           cap.release()
+           cv2.destroyAllWindows()
+       elif 'wikipedia' in query.lower():
+           speak("Searching Wikipedia...")
+           query = query.replace("wikipedia", "")
+           results = wikipedia.summary(query, sentences=2)
+           speak("According to Wikipedia:")
+           speak(results)
+           print(results)
+       elif 'open youtube' in query or 'close youtube' in query:
+           if 'open youtube' in query:
+             webbrowser.open("https://www.youtube.com")
+           elif 'close youtube' in query:
+               quit_website('https://www.youtube.com')
+       elif "check internet speed" in query:
+           check_internet_speed()
+       elif 'atm edge' in query or 'auto' in query:
+           from automation import edgeAuto
+           edgeAuto()    
+       elif "mute" in query:
+          pyautogui.press("m")
+          speak("video muted")
+       elif 'play bholenath songs' in query.lower():
+           music_dir = "E:\bholenath all song"
+           songs = os.listdir(music_dir)
+           rd = random.choice(songs)
+           os.startfile(os.path.join(music_dir, rd))                
+       elif "on youtube" in query:
+           speak('sir! what should i play for u')
+           yt = takecommand()
+           speak('okay sir playing video')
+           kit.playonyt(yt)
+           speak("done,sir!")
+       elif "google" in query: 
+           searchGoogle(query)
+       elif 'dict' in query:   
+           dict()
+       elif 'what is coming from space' in query or 'object near earth' in query:
+           track_neo()    
+       elif 'spacestation' in query:
+           track_iss()    
+       elif 'space' in query:
+           speak('tell me sir, what u want to know')
+           quetion = takecommand()
+           answer = ask_about_space(quetion)  
+           speak(answer)
+       elif 'question' in query:
+             speak('according to chat gpt')
+             MainExecutionChatGPT()
+             print('or')
+             speak('according to google Bard')
+             MainExecution()           
+       elif 'play hariyanvi songs' in query.lower():
+           music_dir = "E:\Hariyanvi songs"
+           songs = os.listdir(music_dir)
+           rd = random.choice(songs)
+           os.startfile(os.path.join(music_dir, rd))
+       elif 'time' in query.lower():
+           current_time = datetime.datetime.now().strftime("%H:%M:%S ")
+           speak(f"The current time is {current_time}")
+       elif 'hello' in query or 'hey' in query or 'whats up' in query:
+           speak('hello sir, may i help you')
+       elif 'ip address' in query:
+           ip = get('http//api.ipify.org').text
+           speak(f"your IP address is {ip}")
+       elif 'open insta' in query:
+           speak('okay sir,opening instagram')
+           webbrowser.open("www.instagram.com")
+       elif 'open google' in query:
+           speak("sir, what should i search on google")
+           cm = takecommand().lower()
+           webbrowser.open(f"{cm}")
+       elif "translater" in query:
+                    speak("sir translator is activated")
+                    query = query.replace("RAGHU","")
+                    query = query.replace("translate","")
+                    translategl(query)
+       elif 'close chrome' in query:
+           speak('okay sir closing chrome ')
+           quit_website('www.google//chrome.com')              
+       elif "how are you" in query:
+           speak('i am fine sir, what about you?')
+       elif 'fine' in query or 'good' in query:
+           if 'fine' in query:
+             speak('thats good')
+           elif 'good' in query:
+               speak('ok sir')
+       elif 'Thank you' in query or 'thanks' in query:
+           speak('Its my pleasure sir')
+       elif 'say hello to sir' in query:
+           speak('hello sir!')
+           wish()
+       elif 'feel' in query:
+           speak('feeling fine sir!')  
+       elif 'close insta' in query:
+           speak('okay sir, closing insta')
+           quit_website('www.instagram.com')
+       elif 'dictionary' in query:
+           dict()         
+
+       elif "you can sleep" in query:
+           speak("okay sir, i am going to sleep you can call me anytime.")
+           break
+       elif "bye" in query:
+           speak("okay bye sir, i am going to sleep you can call me anytime.")
+           break
+       elif 'facebook' in query or 'close' in query:
+           if 'facebook' in query:
+                speak('opening facebook')
+                webbrowser.open('www.facebook.com')
+           elif 'close' in query:
+               speak('closing') 
+               quit_website('www.facebook.com')      
+       elif 'telegram' in query or 'close' in query:
+           if 'telegram' in query:
+               speak('opening sir!')
+               webbrowser.open('https://web.telegram.org/k/')
+           elif 'close' in query:
+               quit_website('https://web.telegram.org/k/')
+       
+
+        # to set an alarm
+       elif "set alarm" in query:
+           nn = int(datetime.datetime.now().hour)
+           if nn == 22:
+               music_dir = 'E:\Hariyanvi songs'
+               songs = os.listdir(music_dir)
+               os.startfile(os.path.join(music_dir, songs[0]))
+        # to find joke
+       elif 'tell me a joke' in query:
+           joke = pyjokes.get_joke()
+           speak(joke)
+       elif 'what are you doing' in query or 'kya kar rahe ho' in query:
+            speak("i am assist you")
+       elif 'what is your name' in query or 'name ' in query:
+           speak('my name is RAGHU')
+       elif 'master' in query or 'created u' in query:
+           speak('Anuj sir is my master and he is created me')
+       elif 'when' in query:
+           speak("i am invented in 15 august in 2023")
+       elif 'shutdown pc' in query:
+           speak('ok sir, system is shuting down')
+           os.system('shutdown /s /t 5')
+       elif "restart the pc" in query:
+           speak('okay sir, system is reastarting')
+           os.system("shutdown /r /t 5")
+       elif "sleep the pc" in query:
+           os.system("rundll32.exe powrprof.dll,setsuspendstate 0,1,0")
+       elif 'switch the desktop' in query:
+           speak('switching window')
+           pyautogui.keyDown("alt")
+           pyautogui.press("tab")
+           time.sleep(1)
+           pyautogui.keyUp("alt")
+       elif 'tell me news' in query:
+           speak("wait a second sir, feteching the latest news")
+           News()
+           
+
+        # ---------------to calculate math-----------
+
+       elif "calculator" in query or "calculate" in query:
+           speak('okay sir, calculator is on. i am calculate any number with in seconds')
+           while True:
+            calcu=takecommand()
+            if 'exit'in calcu or 'close' in calcu:
+                break
+            else:
+             r = sr.Recognizer()
+            with sr.Microphone() as source:
+             speak("Say what you want to calculate, example: 3 plus 3. only two digits")
+             print("listening.....")
+             r.adjust_for_ambient_noise(source)
+             audio = r.listen(source)
+             my_string = r.recognize_google(audio)
+             speak(my_string)
+
+
+            def get_operator_fn(op):
+                return {
+                    '+': operator.add,  # plus
+                    '-': operator.sub,  # minus
+                    'x': operator.mul,  # multiplied by
+                    '/': operator.truediv,  # divided
+                }[op]
+
+
+            def eval_binary_expr(op1, oper, op2):  # 5 plus 8 return get_operator_fn(oper) (op1, op2)
+                op1, op2 = int(op1), int(op2)
+                return get_operator_fn(oper)(op1, op2)
+
+
+            speak("The result is")
+            speak(eval_binary_expr(*(my_string.split())))
+
+       elif "meri location kya he" in query or "what is my location" in query:
+           speak("wait sir, let me check") 
+           search = "my location"
+           url = f"https://www.google.com//maps//search?q={search}"
+           r = requests.get(url)
+
+       elif ' who is prime minister of india' in query:
+           webbrowser.open('who is prime minister of india')
+       elif 'youtube auto' in query:
+           from automation import youtubeAuto
+           youtubeAuto()
+       elif 'chrome auto' in query:
+          from automation import CHROMEAuto
+          CHROMEAuto()
+        # -----------------------To find your location using ip address
+
+       elif "meri location kya he" in query or "what is my location" in query:
+           speak("wait sir, let me check")
+           try:
+               ipAdd = requests.get('https://api.ipify.org').text
+               print(ipAdd)
+               url = 'https://get.geojs.io/v1/ip/' + ipAdd + '.json'
+               geo_requests = requests.get(url)
+               geo_data = geo_requests.json()
+               print(geo_data)
+               city = geo_data['city']
+               state = geo_data['state']
+               country = geo_data['country']
+               speak(f"sir, our current location is {city} city of {state} in {country} ")
+           except Exception as e:
+               speak("sorry sir, Due to network issue i am not able to find where we are.")
+               pass
+
+       elif "how much power left" in query or "how much power we have" in query or "battery" in query:
+            import psutil
+            battery = psutil.sensors_battery()
+            percentage = battery.percent
+            speak(f"sir our system have {percentage} percent battery")
+            if percentage>=75:
+               speak("we have enough power to continue our work")
+            elif percentage>-40 and percentage<=75:
+                speak("we should connect our system to charging point to charge our battery")
+            elif percentage<=15 and percentage<=30:
+                speak("we don't have enough power to work, please connect to charging")
+            elif percentage<=15:
+                speak("we have very low power, please connect charger the system will shutdown very soon")
+
+        # ----------------to check your insta gram profile-----
+       elif "instagram profile" in query or "profile on instagram" in query:
+           speak("sir please enter the user name correctly.")
+           name = input("Enter username here:")
+           webbrowser.open(f"www.instagram.com/{name}")
+           speak(f"sir here is the profile of the user{name}")
+           time.sleep(1)
+           speak("sir would u like to download profile picture of this account.")
+           condition = takecommand().lower()
+           if "yes" in condition:
+               mod = instaloader.Instaloader()
+               mod.download_post(name, profile_pic_only=True)
+               mod.download_profile(name, profile_pic_only=True)
+               speak('okay sir , pic is saved in gallery')
+           else:
+                pass
+
+
+       if "battery info" in query or "battery kaisi he" in query:
+            battery_info = get_battery_info()
+            
+            speak(battery_info)  
+
+    
+       elif 'what' in query:
+               speak('what u want to know')
+               speak('according to google bard')
+               MainExecutionBard()
+       elif 'tell me' in query:
+           speak('sir, please tell me what u want to know ?')
+           MainExecutionChatGPT()       
+        
+       
+
+
+
+       if "on wifi" in query or "wifi on" in query or "wifi chalu karo" in query:
+          toggle_wifi('on')  # Turns on Wi-Fi
+
+       elif "off wifi" in query or "wifi off" in query or "wifi band karo" in query:
+          toggle_wifi('off')  # Turns off Wi-Fi
+
+       elif "on bluetooth" in query or "bluetooth on" in query or "bluetooth chalu karo" in query:
+            toggle_bluetooth('on')  # Turns on Bluetooth
+
+       elif "on bluetooth" in query or "bluetooth on" in query or "bluetooth band karo" in query:
+            toggle_bluetooth('off')  # Turns off Bluetooth
+
+
+
+
+       if "brightness" in query:
+          set_brightness()  # Sets the brightness to 50%
+
+
+
+            # -------------------To take screenshot------------------
+
+
+       elif 'Take screenshot' in query or 'Take a screenshot' in query:
+                speak("sir,please tell me the name for this screenshot png")
+                name = takecommand().lower()
+                speak("sir, please hold the screen tightly, i am taking screenshot")
+                time.sleep(1)
+                img = pyautogui.screenshot()
+                img.save(f"{name}.png")
+                speak("okay sir, your work is done and file is saved in gallery ,now i am ready for next query")
+
+
+
+            # --------------------------To read PDF file--------------
+
+       elif "read pdf" in query:
+           pdf_reader()
+
+       elif "open" in query:
+        query = query.replace("RAGHU","")
+        query = query.replace("open","")
+        pyautogui.press("super")
+        pyautogui.typewrite(query)
+        pyautogui.press("enter") 
+       elif 'close' in query:
+        query = query.replace("RAGHU","")
+        query = query.replace("close","")
+
+       elif 'message' in query :
+            pyautogui.press("super")
+            sleep(1)
+            pyautogui.typewrite('whatsApp')
+            sleep(1) 
+            pyautogui.press('enter')        
+            sleep(10)
+            click(x=386, y=191)
+            sleep(2)
+            speak('sir tell me name')
+            name=takecommand()
+            write(name)
+            sleep(2)
+            click(x=358, y=257)
+            sleep(2)
+            speak('sir! please tell me the message')
+            message=takecommand()
+            write(message)
+            pyautogui.press('enter')
+            speak('done ,sir!')
+            pyautogui.press('alt'+'F4')
+
+       elif 'call' in query or 'end' in query:
+            if 'call' in query:
+                pyautogui.press("super")
+                sleep(1)
+                pyautogui.typewrite('whatsApp')
+                sleep(1) 
+                pyautogui.press('enter')        
+                sleep(10)
+                click(x=386, y=191)
+                sleep(2)
+                speak('sir tell me name')
+                name=takecommand()
+                write(name)
+                sleep(2)
+                click(x=358, y=257) 
+                sleep(2)
+                click(x=1167, y=141)
+            elif 'end' in query:
+                click(x=1047, y=775)
+                speak('done sir!, call ended')   
+
+       elif 'video call' in query or 'cut' in query:
+            if 'video call' in query:
+                pyautogui.press("super")
+                sleep(1)
+                pyautogui.typewrite('whatsApp')
+                sleep(1) 
+                pyautogui.press('enter')        
+                sleep(10)
+                click(x=386, y=191)
+                sleep(2)
+                speak('sir tell me name')
+                name=takecommand()
+                write(name)
+                sleep(2)
+                click(x=358, y=257) 
+                sleep(2)  
+                click(x=1117, y=127)    
+            elif 'cut' in query:
+                click(x=1064, y=845)
+                speak('done sir!, call ended')     
+
+       elif "temperature" in query:
+           temperature()
+if __name__ == "__main__":
+ taskexe()
